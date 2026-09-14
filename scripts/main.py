@@ -5,34 +5,35 @@ import json
 import requests
 from pathlib import Path
 from dotenv import load_dotenv
+import toml
 import datetime
 from geopy.geocoders import Nominatim
 
 
-config_path = Path.home() / ".config" / "moonphase" / ".env"
+envPath = Path.home() / ".config" / "moonphase" / ".env"
+envload = load_dotenv(envPath)
+configPath = Path.home() / ".config" / "moonphase" / "config.toml"
+tomlFile = toml.load(configPath)
 
 # Fixes the issue of a empty .env location variable to ensure correct set and rise times
-def enterENV():
+def enterConfigLocation():
     
-
-    envPath = Path(config_path)
-
-    with open(envPath, 'w') as envFile:
+    with open(configPath, 'a') as configFile:
         
         locKey = input("Please enter your city (Example: California) > ")
         
-        envFile.write(f"Location='{locKey}'")
+        configFile.write(f"location = '{locKey}'\n")
+
+
 
 # Load .env and pull the Location key into variable.
-envset = False
-while envset == False:
-    load_dotenv(config_path)
-    Locationkey = os.getenv("Location")
-    if Locationkey == None:
-        enterENV()
-        envset = False
-    else:
-        envset = True
+def get_location():
+    try:
+        Locationkey = tomlFile['location']
+        return Locationkey
+    except:
+        enterConfigLocation()
+            
 
 # Use the current date for current moon phase data
 current_date = datetime.datetime.now()
@@ -40,6 +41,8 @@ date = current_date.strftime("%Y-%m-%d")
 
 # Use geocoding to get the coordinates from the provided Location
 geolocator = Nominatim(user_agent="MoonPhaseTracker")
+Locationkey = get_location()
+
 location = geolocator.geocode(Locationkey)
 lat = location.latitude
 lon = location.longitude
@@ -52,6 +55,35 @@ current_dir = Path(__file__).parent
 moon_phase_dir = current_dir / "MoonFiles"
 
 
+def check_last_run():
+        
+        lastrun = os.getenv("LastRun")
+        
+        if lastrun == date:
+            return True
+        else:
+            return False
+
+
+def log_last_run(moon_phase, moon_fracillum, rise_time, set_time):
+    with open(envPath, 'w') as envFile:
+        
+        envFile.write(f"LastRun='{date}'\n")
+        envFile.write(f"LastPhase='{moon_phase}'\n")
+        envFile.write(f"LastFracillum='{moon_fracillum}'\n")
+        envFile.write(f"LastRise='{rise_time}'\n")
+        envFile.write(f"LastSet='{set_time}'\n")
+
+def get_last_moon():
+
+    lastphase = os.getenv("LastPhase")
+    lastfracillum = os.getenv("LastFracillum")
+    lastrise = os.getenv("LastRise")
+    lastset = os.getenv("LastSet")
+    
+    return lastphase, lastfracillum, lastrise, lastset
+    
+
 # Fix json from being a string back into json for better data parsing
 def fixJSON(json_str: str) -> dict:
     
@@ -60,20 +92,22 @@ def fixJSON(json_str: str) -> dict:
     return dict_json
 
 
+
+
 def outputinfo(moon_fracillum: str, moon_phase: str, moon_rise_time: str, moon_set_time: str) -> None:
     
     infoStr = f"""\n
-    Date: {date}
-
-    Current Moon Phase: {moon_phase}
-
-    Moon Luminosity: {moon_fracillum}
-
-    Moonrise Time: {moon_rise_time}
-    
-    Moonset Time: {moon_set_time}
+    ┌Description─────────────────────────────┐
+    │   Date: {date}                     │
+    │   Current Moon Phase: {moon_phase}  │
+    │   Moon Luminosity: {moon_fracillum}                 │
+    │   Moonrise Time: {moon_rise_time}                 │
+    │   Moonset Time: {moon_set_time}                  │
+    └────────────────────────────────────────┘
     """
     print(infoStr)
+
+
 
 
 # Select the current ascii moon art to print
@@ -92,7 +126,9 @@ def moonselection(moon_phase: str) -> None:
 
         else:
             continue
-        return
+        
+
+
 
 
 # Parse the usno api information 
@@ -114,6 +150,8 @@ def parse_data(parsable_json_data: dict) -> str:
     return current_moon_phase, current_moon_fracillum, moon_rise_time, moon_set_time
     
 
+
+
 # Call the aa.usno.navy.mil api
 def getrequest(lat: float, lon: float) -> dict:
     
@@ -125,14 +163,25 @@ def getrequest(lat: float, lon: float) -> dict:
     
     return parsable_json_data
 
- 
+
+
+
 if __name__ == "__main__":
     
+    ran_today = check_last_run()
+    if ran_today == True:
+        moon_phase, moon_fracillum, mrt, mst = get_last_moon()
+        moonselection(moon_phase.lower().replace(" ", "_"))
+        outputinfo(moon_fracillum, moon_phase, mrt, mst)
+    else:
+
+        data = getrequest(lat, lon) 
+        moon_phase, moon_fracillum, mrt, mst = parse_data(data)
+
+        moonselection(moon_phase.lower().replace(" ", "_")) # Print the Moon phase Ascii first
+
+        outputinfo(moon_fracillum, moon_phase, mrt, mst) # Finish by printing the data on the screen 
+        
+        log_last_run(moon_phase, moon_fracillum, mrt, mst)
 
 
-    data = getrequest(lat, lon) 
-    moon_phase, moon_fracillum, mrt, mst = parse_data(data)
-
-    moonselection(moon_phase.lower().replace(" ", "_")) # Print the Moon phase Ascii first
-
-    outputinfo(moon_fracillum, moon_phase, mrt, mst) # Finish by printing the data on the screen 

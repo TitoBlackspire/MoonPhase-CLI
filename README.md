@@ -24,7 +24,8 @@ makepkg -si
 
 # Set up config file
 mkdir -p ~/.config/moonphase
-cp /etc/skel/.config/moonphase/.env.example ~/.config/moonphase/.env
+touch ~/.config/moonphase/.env
+touch ~/.config/moonphase/config.toml
 ```
 
 ## 🎯 Usage
