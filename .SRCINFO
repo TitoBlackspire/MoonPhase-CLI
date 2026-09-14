@@ -1,0 +1,15 @@
+pkgbase = moonphase
+	pkgdesc = Terminal based moon phase tracker
+	pkgver = 0.2.0
+	pkgrel = 2
+	url = https://github.com/TitoBlackspire/MoonPhase-CLI
+	arch = any
+	license = MIT
+	depends = python
+	depends = python-requests
+	depends = python-geopy
+	depends = python-dotenv
+	depends = python-toml
+	source = moonphase-0.2.0.tar.gz::https://github.com/TitoBlackspire/MoonPhase-CLI/archive/refs/tags/v0.2.0.tar.gz
+
+pkgname = moonphase

@@ -1,28 +1,45 @@
+# Maintainer: TitoBlackspire
+
 pkgname=moonphase
-pkgver=0.2.0
-pkgrel=1
+pkgver=0.2.1
+pkgrel=2
 pkgdesc="Terminal based moon phase tracker"
 arch=('any')
+url="https://github.com/TitoBlackspire/MoonPhase-CLI"
 license=('MIT')
-depends=('python')
-makedepends=('python-pip' 'python-virtualenv')
+
+depends=(
+    'python'
+    'python-requests'
+    'python-geopy'
+    'python-dotenv'
+    'python-toml'
+)
+
+source=(
+    "moonphase-$pkgver.tar.gz::https://github.com/TitoBlackspire/MoonPhase-CLI/archive/refs/tags/v$pkgver.tar.gz"
+)
+
 sha256sums=()
 
-build() {
-    python -m venv "$srcdir/venv"
-    source "$srcdir/venv/bin/activate"
-    pip install --upgrade pip
-    pip install -r "$startdir/requirements.txt"
-    deactivate
-}
 
 package() {
-    install -Dm755 "$startdir/scripts/main.py" "$pkgdir/opt/moonphase/main.py"
-    cp -r "$startdir/scripts/MoonFiles" "$pkgdir/opt/moonphase/MoonFiles"
-    cp -r "$srcdir/venv" "$pkgdir/opt/moonphase/venv"
+
+    install -Dm755 \
+        "$srcdir/MoonPhase-CLI-$pkgver/scripts/main.py" \
+        "$pkgdir/opt/moonphase/main.py"
+
+    install -Dm644 \
+    "$srcdir/MoonPhase-CLI-$pkgver/LICENSE" \
+    "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+
+    cp -r \
+        "$srcdir/MoonPhase-CLI-$pkgver/scripts/MoonFiles" \
+        "$pkgdir/opt/moonphase/MoonFiles"
 
     install -Dm755 /dev/stdin "$pkgdir/usr/bin/moonphase" <<EOF
+
 #!/bin/bash
-exec "/opt/moonphase/venv/bin/python" "/opt/moonphase/main.py" "\$@"
+exec /usr/bin/python /opt/moonphase/main.py "\$@"
 EOF
 }
