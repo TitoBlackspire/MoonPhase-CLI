@@ -1,5 +1,5 @@
 pkgname=moonphase
-pkgver=0.1.0
+pkgver=0.2.0
 pkgrel=1
 pkgdesc="Terminal based moon phase tracker"
 arch=('any')
@@ -20,8 +20,6 @@ package() {
     install -Dm755 "$startdir/scripts/main.py" "$pkgdir/opt/moonphase/main.py"
     cp -r "$startdir/scripts/MoonFiles" "$pkgdir/opt/moonphase/MoonFiles"
     cp -r "$srcdir/venv" "$pkgdir/opt/moonphase/venv"
-
-    install -Dm644 "$startdir/.env.example" "$pkgdir/etc/skel/.config/moonphase/.env.example"
 
     install -Dm755 /dev/stdin "$pkgdir/usr/bin/moonphase" <<EOF
 #!/bin/bash
