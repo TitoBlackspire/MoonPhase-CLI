@@ -20,7 +20,7 @@ source=(
     "moonphase-$pkgver.tar.gz::https://github.com/TitoBlackspire/MoonPhase-CLI/archive/refs/tags/v$pkgver.tar.gz"
 )
 
-sha256sums=()
+sha256sums=('2e42d7fb153c1ab368519a207e5fbb2fc7f7b9e06e1bef3fdb175eb0f1dd0025')
 
 
 package() {
